@@ -1,0 +1,40 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const core_1 = require("@nestjs/core");
+const app_module_1 = require("./app.module");
+const typeorm_1 = require("typeorm");
+const movie_entity_1 = require("./movies/entities/movie.entity");
+const actors_entity_1 = require("./actors/actors.entity");
+const ratings_entity_1 = require("./ratings/entities/ratings.entity");
+const movie_actor_entity_1 = require("./movieActor/movie-actor.entity");
+async function seed() {
+    const app = await core_1.NestFactory.createApplicationContext(app_module_1.AppModule);
+    const dataSource = app.get(typeorm_1.DataSource);
+    const movieRepo = dataSource.getRepository(movie_entity_1.Movie);
+    const actorRepo = dataSource.getRepository(actors_entity_1.Actor);
+    const ratingRepo = dataSource.getRepository(ratings_entity_1.Rating);
+    const movieActorRepo = dataSource.getRepository(movie_actor_entity_1.MovieActor);
+    await dataSource.query(`DELETE FROM ratings`);
+    await dataSource.query(`DELETE FROM movies`);
+    await dataSource.query(`DELETE FROM movie_actors`);
+    await dataSource.query(`DELETE FROM actors`);
+    const actor1 = actorRepo.create({ first_name: 'Tom', last_name: 'Hanks' });
+    const actor2 = actorRepo.create({ first_name: 'Robin', last_name: 'Wright' });
+    const actor3 = actorRepo.create({ first_name: 'Keanu', last_name: 'Reeves' });
+    await actorRepo.save([actor1, actor2, actor3]);
+    const movie1 = movieRepo.create({ title: 'Forrest Gump', year: 1994 });
+    const movie2 = movieRepo.create({ title: 'The Matrix', year: 1999 });
+    await movieRepo.save([movie1, movie2]);
+    const rating1 = ratingRepo.create({ rating: 5, movie: movie1 });
+    const rating2 = ratingRepo.create({ rating: 4, movie: movie1 });
+    const rating3 = ratingRepo.create({ rating: 5, movie: movie2 });
+    await ratingRepo.save([rating1, rating2, rating3]);
+    const ma1 = movieActorRepo.create({ movie: movie1, actor: actor1 });
+    const ma2 = movieActorRepo.create({ movie: movie1, actor: actor2 });
+    const ma3 = movieActorRepo.create({ movie: movie2, actor: actor3 });
+    await movieActorRepo.save([ma1, ma2, ma3]);
+    console.log('🎉 Database seeding completed!');
+    await app.close();
+}
+seed();
+//# sourceMappingURL=seed.js.map
